@@ -1,0 +1,34 @@
+<h1>History</h1>
+<% content_for :title do %>
+  <%=selected_project.name%> - Backlog 
+<% end %>
+<style>
+    #item_list { list-style-type: none; margin: 0; padding: 10px; width: 100%; font-size: 15px; background-color:#DDDDDD;}
+    #item_list li { clear:both;margin: 5px 5px 5px 10px; padding: 5px 5px 5px 5px; font-size: 15px;  height: 60px; }
+    .ui-state-highlight { height: 60px; line-height: 1em; }
+</style>
+
+<script>
+    function open_story(id){
+        url = "<%= url_for(:controller => 'backlog', :action => 'show', :scope => selected_project.scope, :name => selected_project.name, :identifier => '') %>"+id
+        location.href = url
+    }
+</script>
+
+<div class="container-fluid fill">
+    <div class="row-fluid">
+        
+        <div class="span12 filler">
+            <h3>Backlog</h3>
+                <ul id="item_list">
+                    <% selected_project.user_stories.where(:historized => true).order("historized_date DESC").each { |user_story| %>
+                       <li id="next_<%= user_story.id %>" class="alert alert-success">
+                       		<% @user_story = user_story %>
+                           <%= render :partial => 'shared/card'%>
+                        </li>
+                    <% } %>
+                </ul>
+        </div>
+    </div>
+</div>
+

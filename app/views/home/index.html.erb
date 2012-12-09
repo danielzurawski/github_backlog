@@ -1,0 +1,37 @@
+<% content_for :title do %>
+  Home
+<% end %>
+
+
+<div class="hero-unit">
+  <h1><h1>Welcome  <%= current_user.login unless current_user.nil? %><%= "on Github-Backlog" if current_user.nil? %>!</h1></h1>
+  <p>	<% if user_signed_in? %>
+			Please select a project to start working on it. Or <%= link_to 'create a new one', project_new_path %>
+		<% else %>
+			Please use the "Log in with github" link under and your account will automatically be created from your github account.</p>
+		<% end %>
+  <p>
+    <% if !user_signed_in? %><%=link_to 'Login with github','/auth/github', :class => 'btn btn-primary btn-large' %><% end %>
+  </p>
+</div>
+
+<% if !user_signed_in? %>
+      <!-- Example row of columns -->
+  <div class="row">
+    <div class="span4">
+      <h2>User stories</h2>
+      <p><%= image_tag("/images/user_story.png", :alt => "User story", :class => 'img-polaroid') %></p>
+      <p>With Github-Backlog (GH-Backlog) you can <strong>easily</strong> manage your <strong>backlog</strong> for your current development. Create an user story, change the status to <em>ready to implement</em>, and then work on it!</p>
+    </div>
+    <div class="span4">
+      <h2>Github repos</h2>
+      <p><%= image_tag("/images/link_repos.png", :alt => "Link repositories", :class => 'img-polaroid') %></p>
+      <p>You can just select a <strong>github repository</strong> (or several), and link it to your project. Then, when you will create an issue with the <strong>tag [GB #number]</strong>, it will automatically be linked to your user story!</p>
+    </div>
+    <div class="span4">
+      <h2>Teamwork</h2>
+       <p><%= image_tag("/images/teamwork.png", :alt => "Teamwork", :class => 'img-polaroid') %></p>
+      <p>You can <strong>add as much developer</strong> as you want to your project, and work <strong>together</strong> your next big thing!</p>   
+    </div>
+  </div>
+<%end%>

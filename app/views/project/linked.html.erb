@@ -1,0 +1,8 @@
+<% content_for :title do %>
+  <%=selected_project.name%> - Linked 
+<% end %>
+<h1>Perfect</h1>
+
+<p> This is perfect, now your project is linked to the selected github project. </p>
+
+<p>Now <%= link_to 'have a look at your project', {:controller => 'project', :action => 'show', :scope => @project.scope, :name => @project.name} %>

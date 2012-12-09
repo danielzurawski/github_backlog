@@ -1,0 +1,11 @@
+<% content_for :title do %>
+  Your projects - New
+<% end %>
+<h1>Create a project</h1>
+<p>Hey, just fill the formular under to create your project</p>
+
+<%= simple_form_for @project, :url => project_create_path do |f| %>
+  <%= f.input :name %>
+  <%= f.input :description, :as => :text, :input_html => {:style => "width:50%;",:rows => 5}, :label => "Description (you can use markdown to format it)" %>
+  <%= f.button :submit, :class => 'btn-primary' %>
+<% end %>

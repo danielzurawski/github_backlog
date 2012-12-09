@@ -1,0 +1,99 @@
+<% content_for :title do %>
+  <%=selected_project.name%> - <%=@user_story.title %> 
+<% end %>
+<div class="container-fluid fill">
+    <div class="row-fluid">
+        <div class="span5"> 
+
+          <h1><%=@user_story.title %></h1>
+          <div style="float:right">
+            <% if @user_story.user_story_status.name == "Draft" %>
+              <%= link_to 'Ready to be implemented', {:controller => 'backlog', :action => 'ready', :scope => selected_project.scope, :name => selected_project.name, :identifier => @user_story.identifier}, :class => 'btn btn-success'%>
+            <%elsif @user_story.user_story_status.name == "Ready to be implemented" %>
+              <%= link_to 'Back as draft', {:controller => 'backlog', :action => 'draft', :scope => selected_project.scope, :name => selected_project.name, :identifier => @user_story.identifier}, :class => 'btn btn-inverse' %>
+            <%elsif @user_story.user_story_status.name == "In progress" %>
+              <%= link_to 'Accepted', {:controller => 'backlog', :action => 'accept', :scope => selected_project.scope, :name => selected_project.name, :identifier => @user_story.identifier}, :class => 'btn btn-success' %>
+              <%= link_to 'Rejected', {:controller => 'backlog', :action => 'reject', :scope => selected_project.scope, :name => selected_project.name, :identifier => @user_story.identifier}, :class => 'btn btn-danger' %>
+            <%elsif (@user_story.user_story_status.name == "Accepted" ||   @user_story.user_story_status.name == "Rejected") && !@user_story.historized%>
+              <%= link_to 'Back as in progress', {:controller => 'backlog', :action => 'progress', :scope => selected_project.scope, :name => selected_project.name, :identifier => @user_story.identifier}, :class => 'btn btn-inverse' %>
+            <%end %>
+
+            <%= (link_to 'Edit', {:controller => 'backlog', :action => 'edit', :scope => selected_project.scope, :name => selected_project.name, :identifier => @user_story.identifier}, :class => 'btn btn-warning', :style => '') if !@user_story.historized %>
+            <%= (link_to 'Delete', {:controller => 'backlog', :action => 'delete', :scope => selected_project.scope, :name => selected_project.name, :identifier => @user_story.identifier}, :class => 'btn btn-danger', :style => '') if !@user_story.historized %>
+          </div>
+          <div style="clear:both"></div>
+          <ul class="nav nav-tabs" id="myTab" style="margin-top:20px">
+              <li class="active"><a href="#description">Description</a></li>
+              <li><a href="#use_cases">Use cases</a></li>
+              <li><a href="#acceptance_tests">Acceptance tests</a></li>
+          </ul>
+           
+          <div class="tab-content">
+              <div class="tab-pane active" id="description"> 
+                <p class="lead">Description</p>
+                <p><%= sanitize Kramdown::Document.new(@user_story.description).to_html unless @user_story.description.nil? %></p>
+                <p class="lead">Status</p>
+                <p><strong><%= @user_story.user_story_status.name %></strong></p>
+                <p class="lead">Type</p>
+                <p><strong><%= @user_story.user_story_type.name %></strong></p>
+              </div>
+              <div class="tab-pane" id="use_cases">
+                <p class="lead">Use cases</p>
+                <%= sanitize Kramdown::Document.new(@user_story.use_cases).to_html unless @user_story.use_cases.nil? %>
+              </div>
+              <div class="tab-pane" id="acceptance_tests">
+                <p class="lead">Acceptance tests</p>
+                <%= sanitize Kramdown::Document.new(@user_story.acceptance_tests).to_html unless @user_story.acceptance_tests.nil? %>
+
+              </div>
+          </div>
+           
+          <script>
+            $(function () {
+              $('#myTab a:first').tab('show');
+            })
+
+            $('#myTab a').click(function (e) {
+              e.preventDefault();
+              $(this).tab('show');
+            })
+          </script>
+
+        </div>
+        <div class="span7">
+          <style>
+              #item_list { list-style-type: none; margin: 0; padding: 10px; width: 100%; font-size: 15px; background-color:#DDDDDD;}
+              #item_list li { margin: 5px 5px 5px 5px; padding: 5px 5px 5px 5px; font-size: 15px;  height: 40px; }
+              .ui-state-highlight { height: 40px; line-height: 1em; }
+          </style>
+
+           <div class="progress progress-striped active" style="margin-top:30px">
+              <div class="bar bar-success" style="width: <%if @user_story.issues.where(:project_id => selected_project).count > 0 then %><%= ((@user_story.issues.where(:state => 'closed',:project_id => selected_project).count.to_f / @user_story.issues.where(:project_id => selected_project).count.to_f) * 100 ).to_i%><%else%>0<% end%>%;"></div>
+              <div class="bar bar-danger" style="width: <%if @user_story.issues.where(:project_id => selected_project).count > 0 then %><%= 100 - ((@user_story.issues.where(:state => 'closed',:project_id => selected_project).count.to_f / @user_story.issues.where(:project_id => selected_project).count.to_f) * 100 ).to_i%><%else%>100<% end%>%;"></div>
+          </div> 
+
+          <p class="lead">Related github issues</p>
+          <ul id="item_list">
+            <% @user_story.issues.where(:project_id => selected_project).order("state DESC, github_number ASC").each {|issue| %>
+            
+                  <li id="item_<%= issue.id %>" class="alert alert-info">
+                      <div class="warning">
+                          <div style="float:left;width:70px;font-size:40px;height:40px;margin-top:10px;margin-right:10px">
+                             <%=issue.github_number %>
+                          </div>
+                          <div style="float:left">
+                              <big><%=issue.title %> </big><br />
+                              <small>Assignee : <%= issue.github_assignee %></small>
+                          </div>
+                          <div style="float:right;margin-top:5px;">
+                            <button class="btn btn-<%if issue.state == 'closed'%>danger<%else%>success<%end%>" style="width:90px"><%=issue.state.capitalize%></button>
+                            <a href="<%=issue.github_url %>" target="_blank" class="btn btn-info" style="width:90px"> See on github</a>
+                          </div>
+                      </div>
+                  </li>
+                       
+              <% } %>
+          </ul>
+        </div>
+      </div>
+</div>

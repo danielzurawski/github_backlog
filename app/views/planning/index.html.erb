@@ -1,0 +1,107 @@
+<% content_for :title do %>
+  <%=selected_project.name%> - Planning 
+<% end %>
+<style>
+    #item_list_backlog { list-style-type: none; margin: 0; padding: 10px; width: 100%; font-size: 15px; background-color:#DDDDDD;}
+    #item_list_backlog li { clear:both;margin: 5px 5px 5px 10px; padding: 5px 5px 5px 5px; font-size: 15px;  height: 60px; }
+    .ui-state-highlight { height: 60px; line-height: 1em; }
+    #item_list_current_sprint { list-style-type: none; margin: 0; padding: 10px; width: 100%; font-size: 15px; background-color:#DDDDDD;}
+    #item_list_current_sprint li { clear:both;margin: 5px 5px 5px 10px; padding: 5px 5px 5px 5px; font-size: 15px;  height: 60px; }
+    #item_list_next_sprint { list-style-type: none; margin: 0; padding: 10px; width: 100%; font-size: 15px; background-color:#DDDDDD;}
+    #item_list_next_sprint li { clear:both;margin: 5px 5px 5px 10px; padding: 5px 5px 5px 5px; font-size: 15px;  height: 60px; }
+</style>
+
+<script>
+    function open_story(id){
+        url = "<%= url_for(:controller => 'backlog', :action => 'show', :scope => selected_project.scope, :name => selected_project.name, :identifier => '') %>"+id
+        location.href = url
+    }
+    var card_to_reload
+    function load_card(){
+    	$(card_to_reload).load("<%= url_for(:controller => 'planning', :action => 'card', :scope => selected_project.scope, :name => selected_project.name, :identifier => '') %>"+/(\d+)/.exec($(card_to_reload).attr("id"))[0])
+    }
+    $(function() {
+        $( "#item_list_backlog, #item_list_current_sprint, #item_list_next_sprint" ).sortable({
+            placeholder: "ui-state-highlight",
+            connectWith: ".connectedSortable",
+            stop: function(i) {
+                $.ajax({
+                type: "POST",
+                url: "<%= planning_reorder_path%>",
+                data: $("#item_list_backlog").sortable("serialize") + "&" + $("#item_list_current_sprint").sortable("serialize")+ "&" + $("#item_list_next_sprint").sortable("serialize"),
+                success: function(response, textStatus, jqXHR){
+		            load_card()
+		        },
+            	
+            })
+            },
+            update: function(event, ui) { 
+                ui.item.unbind("click");
+                ui.item.one("click", function (event) { 
+                    console.log("one-time-click"); 
+                    event.stopImmediatePropagation();
+                }); 
+             },
+             receive: function(event, ui) { 
+			  	if ($(this).attr("id") == "item_list_current_sprint"){
+			  		$(ui.item).attr("id", ui.item.attr("id").replace("backlog", "current"))
+			  		$(ui.item).attr("id", ui.item.attr("id").replace("next", "current"))
+			  	}
+			  	if ($(this).attr("id") == "item_list_next_sprint"){
+			  		$(ui.item).attr("id", ui.item.attr("id").replace("backlog", "next"))
+			  		$(ui.item).attr("id", ui.item.attr("id").replace("current", "next"))
+			  	}
+			  	if ($(this).attr("id") == "item_list_backlog"){
+			  		$(ui.item).attr("id", ui.item.attr("id").replace("current", "backlog"))
+			  		$(ui.item).attr("id", ui.item.attr("id").replace("next", "backlog"))
+			  	}
+			  	card_to_reload = ui.item
+			}
+        })
+    });
+</script>
+
+<div class="container-fluid fill">
+    <div class="row-fluid">
+        <div class="span6">  
+            <div style="float:right;margin-top:10px"><%= link_to('Close sprint', {:controller => 'planning', :action => 'close', :scope => selected_project.scope, :name => selected_project.name}, :class => 'btn btn-success')%></div>  
+            <h3>Current sprint</h3>
+            
+            <ul id="item_list_current_sprint"  style="clear:both;margin-top:10px;" class="connectedSortable">
+                    <% status_available = selected_project.user_story_statuses.where("name = ?" , 'Ready to be implemented')%>
+                    <% selected_project.user_stories.where(:current_sprint => true).order(:position).each { |user_story| %>
+                        <% @user_story = user_story %>
+                        <li id="current_<%= user_story.id %>" class="alert alert-success">
+                           <%= render :partial => 'shared/card'%>
+                           
+                        </li>
+                    <% } %>
+                </ul>
+                 <h3>Next sprint</h3>
+            	<ul id="item_list_next_sprint"  class="connectedSortable">
+                    <% status_available = selected_project.user_story_statuses.where("name = ?" , 'Ready to be implemented')%>
+                    <% selected_project.user_stories.where(:next_sprint => true).order(:position).each { |user_story| %>
+                       <% @user_story = user_story %>
+                        <li id="next_<%= user_story.id %>" class="alert alert-success">
+                           <%= render :partial => 'shared/card'%>
+                           
+                        </li>
+                    <% } %>
+                </ul>
+        </div>
+        <div class="span6 filler">
+            <h3>Backlog</h3>
+                <ul id="item_list_backlog"  class="connectedSortable">
+                    <% status_available = selected_project.user_story_statuses.where("name = ?" , 'Ready to be implemented').first %>
+                    <% selected_project.user_stories.where(:user_story_status_id => status_available, :next_sprint => false, :current_sprint => false).order(:position).each { |user_story| %>
+                    	<% @user_story = user_story %>
+                        <li id="backlog_<%= user_story.id %>" class="alert alert-success">
+                           <%= render :partial => 'shared/card'%>
+                           
+                        </li>
+                    <% } %>
+                </ul>
+        </div>
+    </div>
+</div>
+

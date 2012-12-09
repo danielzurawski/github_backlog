@@ -1,0 +1,19 @@
+<div class="warning">
+
+    <div style="float:left;width:70px;font-size:40px;height:40px;margin-top:10px;margin-right:10px">
+        <%=@user_story.identifier %>
+    </div>
+    <div style=" margin : 0px 0px 10px" onclick="open_story(<%=@user_story.identifier %>)" >
+        <big><%= @user_story.title %> </big><br />
+        <small>
+            <span style="float:left;margin-right:50px">Status : <%= @user_story.user_story_status.name %> </span>
+            <span style="float:right">Type : <%=@user_story.user_story_type.name %></span>
+        </small><br />
+        <% if @user_story.user_story_status.name != "Draft" && @user_story.user_story_status.name != "Ready to be implemented" %>
+            <div class="progress progress-striped active;float:left;">
+                <div class="bar bar-success" style="width: <%if @user_story.issues.where(:project_id => selected_project).count > 0 then %><%= ((@user_story.issues.where(:state => 'closed',:project_id => selected_project).count.to_f / @user_story.issues.where(:project_id => selected_project).count.to_f) * 100 ).to_i%><%else%>0<% end%>%;"></div>
+                <div class="bar bar-danger" style="width: <%if @user_story.issues.where(:project_id => selected_project).count > 0 then %><%= 100 - ((@user_story.issues.where(:state => 'closed',:project_id => selected_project).count.to_f / @user_story.issues.where(:project_id => selected_project).count.to_f) * 100 ).to_i%><%else%>100<% end%>%;"></div>
+            </div> 
+        <% end %>
+    </div>
+</div>

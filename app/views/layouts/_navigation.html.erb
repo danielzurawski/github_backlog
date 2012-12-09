@@ -1,0 +1,57 @@
+<script type="text/javascript">
+	function change_project(id){
+		$.post("<%= project_select_project_path %>", { project_id: id },
+		   function(data) {
+				location.reload();
+		   }
+		)
+	}
+</script>
+ <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          
+			<a href="<%=url_for root_path%>" class="brand">GH-Backlog <small>beta</small></a>
+
+          <div class="nav-collapse collapse">
+              <% if user_signed_in? %>
+				<ul class="nav">
+					<li class="dropdown">
+		                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Projects <b class="caret"></b></a>
+		                <ul class="dropdown-menu">
+			                <li><%= link_to('List projects', project_list_path)%></li>
+			                <li class="divider"></li>
+			                <li class="nav-header">Your projects</li>
+			                <% proj = selected_project || Project.new %>
+							<% current_user.projects.each { |project| %>
+								<li <% if proj.id == project.id %> class="active" <% end %>><a href="#" onclick="javascript:change_project(<%=project.id%>)"><%= project.scope %>/<%= project.name %></a></li>
+							<% } %>
+
+		                </ul>
+		            </li>
+					<li></li>
+					<% if selected_project? %>
+						<li><%= link_to('Backlog', {:controller => 'backlog', :scope => selected_project.scope, :name => selected_project.name})%></li>
+						<li><%= link_to('Planning',  {:controller => 'planning', :scope => selected_project.scope, :name => selected_project.name})%></li>
+						<li><%= link_to('History',  {:controller => 'history', :scope => selected_project.scope, :name => selected_project.name})%></li>
+					<% end %>
+				</ul>
+			<% end %>
+
+			<ul class="nav" style="float:right">
+			  	<% if user_signed_in? %>
+			    	<li>
+				    <%= link_to('Logout', '/logout') %>        
+				    </li>
+				    <li>
+				    <%= link_to('Edit account', 'auth/github') %>
+				    </li>
+			  	<% else %>
+				    <li>
+				    <%= link_to('Login', 'auth/github')  %>  
+				    </li>
+			  	<% end %>
+			</ul>
+          </div>

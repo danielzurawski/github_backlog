@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GH - Backlog - <%= content_for?(:title) ? yield(:title) : "" %></title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <%= stylesheet_link_tag "application", :media => "all" %>
+    <%= javascript_include_tag "application" %>
+    <%= csrf_meta_tags %>
+    <link href= "http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.8/themes/redmond/jquery-ui.css" rel ="stylesheet" type ="text/css" />
+
+    <%= yield(:head) %>
+  </head>
+  <body>
+    <header class="navbar navbar-fixed-top">
+      <nav class="navbar-inner">
+        <div class="container">
+         
+        </div>
+      </nav>
+    </header>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+           <%= render 'layouts/navigation' %>
+            <!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+    <div id="main" role="main">
+      <div class="container">
+        <%= render 'layouts/messages' %>
+        <%= yield %>
+         <hr>
+         
+        <footer>© <a href="http://github.com/scboffspring">Scboffspring</a> - 2012</footer>
+      </div> <!--! end of .container -->
+    </div> <!--! end of #main -->
+  </body>
+</html>

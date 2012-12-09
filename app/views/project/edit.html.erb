@@ -1,0 +1,11 @@
+<% content_for :title do %>
+  <%=selected_project.name%> - Edit 
+<% end %>
+<h1>Edit <%=@project.name %></h1>
+<p>Hey, just modify the formular under to edit your project</p>
+
+<%= simple_form_for @project, :url => "/project/edit/#{@project.scope}/#{@project.name}"  do |f| %>
+  <%= f.input :name , :disabled => true %>
+  <%= f.input :description, :as => :text, :input_html => {:style => "width:50%;",:rows => 5}, :label => "Description (you can use markdown to format it)" %>
+  <%= f.button :submit, :class => 'btn-primary' %>
+<% end %>

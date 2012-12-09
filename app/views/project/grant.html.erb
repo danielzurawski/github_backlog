@@ -1,0 +1,12 @@
+<% content_for :title do %>
+  <%=selected_project.name%> - Grant 
+<% end %>
+<h1>Grant access</h1>
+
+<p>Please enter the username of the user you want to link with</p>
+
+<p>
+<%= simple_form_for @user, :url => {:controller => 'project', :action => 'grant', :project_id => params[:project_id]} do |f| %>
+  <%= f.input :login, :url => autocomplete_user_login_user_index_path, :as => :autocomplete %>
+  <%= f.submit 'Grant access!', :class => 'btn-primary' %>
+<% end %>

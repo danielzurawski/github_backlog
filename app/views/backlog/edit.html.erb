@@ -1,0 +1,49 @@
+<% content_for :title do %>
+  <%=selected_project.name%> - <%=@user_story.title%>
+<% end %>
+<style>
+    #item_list { list-style-type: none; margin: 0; padding: 10px; width: 100%; font-size: 15px; background-color:#DDDDDD;}
+    #item_list li { margin: 5px 5px 5px 5px; padding: 5px 5px 5px 5px; font-size: 15px;  height: 40px; }
+    .ui-state-highlight { height: 40px; line-height: 1em; }
+</style>
+<h1>Edit</h1>      
+<%= simple_form_for @user_story, :url => {:action => 'edit', :scope => selected_project.scope, :name => selected_project.name, :identifier => @user_story.identifier} do |f| %>
+
+<ul class="nav nav-tabs" id="myTab">
+    <li class="active"><a href="#description">Description</a></li>
+    <li><a href="#use_cases">Use cases</a></li>
+    <li><a href="#acceptance_tests">Acceptance tests</a></li>
+</ul>
+ 
+<div class="tab-content">
+    <div class="tab-pane active" id="description"> 
+      <p class="lead">Description</p>
+      <%=f.input :title, :label => 'Title ' %>
+      <%=f.input :description , :input_html => {:style => "width:80%;",:rows => 5}, :label => "Description (you can use markdown to format it)"%>
+      <% collection = selected_project.user_story_statuses.where("name = ? or name = ?" ,'Draft', 'Ready to be implemented') %>
+      <% collection = selected_project.user_story_statuses.where("name = ? or name = ? or name = ?" ,'Accepted', 'Rejected', 'In progress') if @user_story.user_story_status.name == 'In progress' || @user_story.user_story_status.name == 'Rejected' || @user_story.user_story_status.name == 'Accepted' %>
+      <% collection = selected_project.user_story_statuses.where("name = ? or name = ? or name = ?" ,@user_story.user_story_status.name) if @user_story.user_story_status.historized %>
+      <%=f.association :user_story_status, :collection =>  collection%>
+      <%=f.association :user_story_type, :collection => selected_project.user_story_types %>
+    </div>
+    <div class="tab-pane" id="use_cases">
+      <p class="lead">Use cases</p>
+       <%=f.input :use_cases , :input_html => {:style => "width:80%;",:rows => 5}, :label => "Use cases (you can use markdown to format it)"%>
+    </div>
+    <div class="tab-pane" id="acceptance_tests">
+      <p class="lead">Acceptance tests</p>
+      <%=f.input :acceptance_tests , :input_html => {:style => "width:80%;",:rows => 5}, :label => "Use cases (you can use markdown to format it)"%>
+    </div>
+</div>
+<div style="text-align:center"> <%= f.submit 'Save !', :class => 'btn-primary btn-large' %> <%= link_to "Cancel", :back, :class => 'btn btn-large' %></div>
+<% end %>
+<script>
+  $(function () {
+    $('#myTab a:first').tab('show');
+  })
+
+  $('#myTab a').click(function (e) {
+    e.preventDefault();
+    $(this).tab('show');
+  })
+</script>

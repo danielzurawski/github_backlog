@@ -1,0 +1,59 @@
+<% content_for :title do %>
+  <%=selected_project.name%> - Show 
+<% end %>
+<h1><%= @project.name %></h1>
+<p class="lead">Repositories</p>
+<div style="float:right"><%= link_to 'Add a new repository', {:controller => "project", :action => "link", :scope => @project.scope, :name => @project.name}, :class => 'btn btn-success' %></div>
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Repository name</th>
+			<th>Action</th>
+		</tr>
+	</thead>
+	<tbody>
+	<% @project.repos.each { |repo| %>
+		<tr>
+			<td><%= repo.owner %>/<%= repo.repo %></td>
+			<td>
+				<%= link_to 'Unlink', { :controller => "project", :action => "unlink", :scope => @project.scope, :name => @project.name, :repo_id => repo.id}, :class => 'btn btn-danger' %>
+			</td>
+		</tr>
+	<% } %>
+	</tbody>
+</table>
+
+<p class="lead">Users</p>
+<div style="float:right"><%= link_to 'Grant access', {:controller => "project", :action => "grant", :scope => @project.scope, :name => @project.name}, :class => 'btn btn-success' %></div>
+
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Login</th>
+			<th>Real name</th>
+			<th>Action</th>
+		</tr>
+	</thead>
+	<tbody>
+	<% @project.users.each { |user| %>
+		<tr>
+			<td><%= user.login %></td>
+			<td><%= user.name %></td>
+			<td>
+				<%= link_to 'Revoke access', { :controller => "project", :action => "revoke", :scope => @project.scope, :name => @project.name, :user_id => user.id}, :class => 'btn btn-danger' %>
+			</td>
+		</tr>
+	<% } %>
+	</tbody>
+</table>
+
+<div class="content" style="margin-bottom:30px">
+     <div class="row">
+     	<div class="span12">
+        	<p class="lead">Description</p>
+			<%= sanitize Kramdown::Document.new(@project.description).to_html %>
+     	</div>
+     </div>
+</div>
+
+

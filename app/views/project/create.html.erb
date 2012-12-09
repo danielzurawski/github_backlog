@@ -1,0 +1,12 @@
+<% content_for :title do %>
+  <%=selected_project.name%> - Link 
+<% end %>
+<h1>Great !</h1>
+
+<p>Your project was sucessfuly created. You are can now link it to the github repos you want.</p>
+
+<p>
+<%= simple_form_for @github, :url => project_linked_path do |f| %>
+  <%= f.input :repo, :label => 'Please select the repository you want to link', :collection => @repos , :label_method => 'full_name', :value_method => 'full_name' %>
+  <%= f.submit 'Link it!', :class => 'btn-primary' %>
+<% end %>

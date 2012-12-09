@@ -1,0 +1,86 @@
+<% content_for :title do %>
+  <%=selected_project.name%> - Backlog 
+<% end %>
+<style>
+    #item_list { list-style-type: none; margin: 0; padding: 10px; width: 100%; font-size: 15px; background-color:#DDDDDD;}
+    #item_list li { clear:both;margin: 5px 5px 5px 10px; padding: 5px 5px 5px 5px; font-size: 15px;  height: 60px; }
+    .ui-state-highlight { height: 60px; line-height: 1em; }
+</style>
+
+<script>
+    function open_story(id){
+        url = "<%= url_for(:controller => 'backlog', :action => 'show', :scope => selected_project.scope, :name => selected_project.name, :identifier => '') %>"+id
+        location.href = url
+    }
+    $(function() {
+        $( "#item_list" ).sortable({
+            placeholder: "ui-state-highlight",
+            stop: function(i) {
+                $.ajax({
+                type: "POST",
+                url: "<%= backlog_reorder_path %>",
+                data: $("#item_list").sortable("serialize")
+            })
+            },
+            update: function(event, ui) { 
+                ui.item.unbind("click");
+                ui.item.one("click", function (event) { 
+                    console.log("one-time-click"); 
+                    event.stopImmediatePropagation();
+                }); 
+             },
+        })
+    });
+</script>
+
+<div class="container-fluid fill">
+    <div class="row-fluid">
+        <div class="span3">    
+            <h3>New story</h3>
+            <%=simple_form_for @user_story, :url => backlog_create_path do |f| %>
+               <%= f.input :title, :style => "width:100%;" %>
+               <%= f.association :user_story_type, :collection => selected_project.user_story_types, :selected => :default, :style => "width:100%;" %>
+                <%= f.input :description , :input_html => {:style => "width:100%;",:rows => 6}, :label => "Description (you can use markdown to format it)", :placeholder => 'As a <role>, I want <goal/desire> so that <benefit>' %>
+                <%= f.button :submit, :label => 'Add it!', :class => 'btn-primary'  %>
+            <% end %>
+        </div>
+        <div class="span9 filler">
+            <h3>Backlog</h3>
+                <ul id="item_list">
+                    <% status_available = selected_project.user_story_statuses.where("name = ? or name = ?" ,'Draft', 'Ready to be implemented')%>
+                    <% selected_project.user_stories.where(:user_story_status_id => status_available).order(:position).each { |user_story| %>
+                        <li id="item_<%= user_story.id %>" class="alert alert-success">
+                            <div class="warning">
+                                 <div style="float:right;margin-left:10px;">
+                                    <% if user_story.user_story_status.name == "Draft" %>
+                                        <%= link_to 'Ready to be implemented', {:controller => 'backlog', :action => 'ready', :scope => selected_project.scope, :name => selected_project.name, :identifier => user_story.identifier}, :class => 'btn btn-success', :style => 'width:90px;height:50px;line-height:25px' %>
+                                    <%elsif user_story.user_story_status.name == "Ready to be implemented" %>
+                                        <%= link_to 'Back as draft', {:controller => 'backlog', :action => 'draft', :scope => selected_project.scope, :name => selected_project.name, :identifier => user_story.identifier}, :class => 'btn btn-inverse', :style => 'width:90px;height:50px;line-height:50px' %>
+                                    <%end %>
+                                </div>
+                                <div style="float:left;width:70px;font-size:40px;height:40px;margin-top:10px;margin-right:10px">
+                                    <%=user_story.identifier %>
+                                </div>
+                                <div style=" margin : 0px 0px 10px" onclick="open_story(<%=user_story.identifier %>)" >
+                                    <big><%= user_story.title %></big><br />
+                                    <small>
+                                        <span style="float:left;margin-right:50px">Status : <%= user_story.user_story_status.name %> </span><!--<span style="float:left"><%= user_story.issues.where(:project_id => selected_project).count %> issues on github (<%= user_story.issues.where(:state => 'open', :project_id => selected_project).count%>/<%= user_story.issues.where(:project_id => selected_project).count %>)
+                                        </span>-->
+                                        <span style="float:right">Type : <%=user_story.user_story_type.name %></span>
+                                    </small><br />
+                                    <% if user_story.user_story_status.name != "Draft" && user_story.user_story_status.name != "Ready to be implemented" %>
+                                        <div class="progress progress-striped active;float:left;">
+                                            <div class="bar bar-success" style="width: <%if user_story.issues.where(:project_id => selected_project).count > 0 then %><%= ((user_story.issues.where(:state => 'closed',:project_id => selected_project).count.to_f / user_story.issues.where(:project_id => selected_project).count.to_f) * 100 ).to_i%><%else%>0<% end%>%;"></div>
+                                            <div class="bar bar-danger" style="width: <%if user_story.issues.where(:project_id => selected_project).count > 0 then %><%= 100 - ((user_story.issues.where(:state => 'closed',:project_id => selected_project).count.to_f / user_story.issues.where(:project_id => selected_project).count.to_f) * 100 ).to_i%><%else%>100<% end%>%;"></div>
+                                        </div> 
+                                    <% end %>
+                                </div>
+                            </div>
+                           
+                        </li>
+                    <% } %>
+                </ul>
+        </div>
+    </div>
+</div>
+
